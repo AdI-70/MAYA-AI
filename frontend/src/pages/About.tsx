@@ -15,7 +15,7 @@ export function AboutPage() {
             <div className="flex flex-col md:flex-row items-center gap-16">
                 <div className="flex-1 space-y-8">
                     <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight animate-in fade-in slide-in-from-bottom-8 duration-700">
-                        Empowering <br/> <span className="text-primary text-glow">Indian MSMEs</span>
+                        Empowering <br/> <span className="arcade-text block mt-2">Indian MSMEs</span>
                     </h1>
                     <p className="text-xl text-text-secondary max-w-xl animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
                         We believe that every business owner deserves access to the best advice and government support, regardless of their size or location.

@@ -17,9 +17,9 @@ export default {
         }
       },
       fontFamily: {
-        mono: ['"Geist Mono"', 'monospace'],
-        sans: ['Inter', 'sans-serif'],
-        display: ['__esbuild_6b67ff', '__esbuild_Fallback_6b67ff', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['__esbuild_6b67ff', '__esbuild_Fallback_6b67ff', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+        mono: ['__esbuild_6b67ff', '__esbuild_Fallback_6b67ff', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+        display: ['__esbuild_6b67ff', '__esbuild_Fallback_6b67ff', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

@@ -42,8 +42,8 @@ export function Header() {
           <span className="text-xl font-display font-bold tracking-wider text-white">MAYA<span className="text-primary">.AI</span></span>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop Nav shifted to right */}
+        <nav className="hidden md:flex items-center gap-8 ml-auto mr-4">
           {navLinks.map((link) => (
             <Link 
               key={link.name} 
@@ -58,13 +58,8 @@ export function Header() {
           ))}
         </nav>
 
-        {/* CTA */}
+        {/* Empty CTA div (placeholder for future use) */}
         <div className="hidden md:flex items-center gap-4">
-            <Link to="/chat">
-                <Button variant="primary" size="sm" glow>
-                    Launch App
-                </Button>
-            </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -89,9 +84,6 @@ export function Header() {
               {link.name}
             </Link>
           ))}
-          <Link to="/chat" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button className="w-full">Launch App</Button>
-          </Link>
         </div>
       )}
     </header>
