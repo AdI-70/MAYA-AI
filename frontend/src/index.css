@@ -3,8 +3,14 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --glow-color-primary: rgba(4, 161, 109, 0.5);
+    --glow-color-secondary: rgba(0, 201, 255, 0.5);
+    --glow-blur: 20px;
+    --glow-spread: 0px;
+  }
   body {
-    @apply bg-background text-text-primary font-mono antialiased overflow-x-hidden;
+    @apply bg-background text-text-primary font-sans antialiased overflow-x-hidden;
   }
 }
 
@@ -18,15 +24,116 @@
   }
 
   .text-glow {
-    text-shadow: 0 0 20px rgba(0, 255, 178, 0.5);
+    text-shadow: 0 0 var(--glow-blur) var(--glow-color-primary);
+    transition: text-shadow 0.3s ease;
+  }
+
+  .text-glow-secondary {
+    text-shadow: 0 0 var(--glow-blur) var(--glow-color-secondary);
+    transition: text-shadow 0.3s ease;
+  }
+
+  .btn-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .btn-glow:hover {
+     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+     box-shadow: 0 0 20px var(--glow-color-primary);
+   }
+
+   .btn-modern-glow {
+     @apply relative px-8 py-3 rounded-xl font-bold transition-all duration-500 overflow-visible border-2;
+     border-color: rgb(4, 250, 147);
+     color: white;
+     background: transparent;
+     box-shadow: 0 0 10px rgba(4, 250, 147, 0.3);
+     z-index: 1;
+   }
+
+   .btn-modern-glow::before {
+     content: '';
+     @apply absolute inset-0 opacity-0 transition-all duration-500 -z-10 rounded-xl;
+     background: rgb(4, 250, 147);
+   }
+
+   /* Footer shadow glow */
+   .btn-modern-glow::after {
+     content: '';
+     @apply absolute left-1/2 -translate-x-1/2 opacity-40 transition-all duration-500 -z-10 blur-xl rounded-full;
+     background: rgb(4, 250, 147);
+     width: 120%;
+     height: 24px;
+     bottom: -15px;
+   }
+
+   .btn-modern-glow:hover {
+     color: #050505;
+     box-shadow: 0 0 25px #00ff9d;
+     transform: translateY(-2px);
+   }
+
+   .btn-modern-glow:hover::before {
+     @apply opacity-100;
+   }
+
+   .btn-modern-glow:hover::after {
+     @apply opacity-90 blur-2xl;
+     width: 150%;
+     height: 20px;
+     bottom: -8px;
+   }
+
+  .arcade-text {
+    font-family: 'Tourney', sans-serif;
+    font-weight: 200;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    color: #fff;
+    /* Inner Stroke: 2px matching text color */
+    -webkit-text-stroke: 1px #fff;
+    /* Metallic Gradient Fill */
+    background: linear-gradient(to bottom, #fff 0%, #00FFB2 45%, #008f63 50%, #00FFB2 55%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Outer Stroke (2px) + Glow (5px) using filters for better layering */
+    filter: 
+      drop-shadow(1px 1px 0px #000e01) 
+      drop-shadow(-1px -1px 0px #37f126) 
+      drop-shadow(1px -1px 0px #0a5815) 
+      drop-shadow(-1px 1px 0px #028518)
+      drop-shadow(0 0 5px var(--glow-color-primary));
+    paint-order: stroke fill;
+  }
+
+  .arcade-text-secondary {
+    font-family: 'Tourney', sans-serif;
+    font-weight: 200;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #fff;
+    -webkit-text-stroke: 1px #fff;
+    background: linear-gradient(to bottom, #fff 0%, #00C9FF 45%, #007694 50%, #00C9FF 55%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: 
+      drop-shadow(1px 1px 0px #010e27) 
+      drop-shadow(-1px -1px 0px #2aecf3) 
+      drop-shadow(1px -1px 0px #02608b) 
+      drop-shadow(-1px 1px 0px #0a045c)
+      drop-shadow(0 0 5px var(--glow-color-secondary));
+    paint-order: stroke fill;
   }
 
   .hero-title {
     font-family: __esbuild_6b67ff, __esbuild_Fallback_6b67ff, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-size: 36px;
+    font-size: 42px;
     line-height: 1.1;
     letter-spacing: -0.02em;
-    font-weight: 500;
+    font-weight: 600;
     font-style: normal;
     font-variant: normal;
     text-transform: none;
@@ -72,16 +179,6 @@
       letter-spacing: -2px;
     }
   }
-
-  .geist-mono-100 { font-family: "Geist Mono", monospace; font-weight: 100; }
-  .geist-mono-200 { font-family: "Geist Mono", monospace; font-weight: 200; }
-  .geist-mono-300 { font-family: "Geist Mono", monospace; font-weight: 300; }
-  .geist-mono-400 { font-family: "Geist Mono", monospace; font-weight: 400; }
-  .geist-mono-500 { font-family: "Geist Mono", monospace; font-weight: 500; }
-  .geist-mono-600 { font-family: "Geist Mono", monospace; font-weight: 600; }
-  .geist-mono-700 { font-family: "Geist Mono", monospace; font-weight: 700; }
-  .geist-mono-800 { font-family: "Geist Mono", monospace; font-weight: 800; }
-  .geist-mono-900 { font-family: "Geist Mono", monospace; font-weight: 900; }
 
   .scrollbar-hide {
     -ms-overflow-style: none;

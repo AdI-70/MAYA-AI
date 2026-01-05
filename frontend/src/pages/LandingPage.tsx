@@ -24,7 +24,7 @@ export function LandingPage() {
           
           <h1 className="hero-title text-white mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             Smarter Business <br />
-            Decisions with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary text-glow">AI Guidance</span>
+            Decisions with <span className="arcade-text block mt-2">AI Guidance</span>
           </h1>
           
           <p className="text-xl text-text-secondary max-w-2xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
@@ -33,11 +33,11 @@ export function LandingPage() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
             <Link to="/chat">
-                <Button variant="primary" size="lg" glow className="w-full sm:w-auto">
-                Start Free Trial <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                <button className="btn-modern-glow w-full sm:w-auto">
+                Start Free Trial <ArrowRight className="inline-block ml-2 w-6 h-5" />
+                </button>
             </Link>
-            <Button variant="ghost" size="lg" className="w-full sm:w-auto">
+            <Button variant="ghost" size="lg" className="w-full sm:w-auto btn-glow">
               View Demo
             </Button>
           </div>
@@ -183,7 +183,7 @@ export function LandingPage() {
             </h2>
             <p className="text-xl text-text-secondary mb-12">No credit card required. Start growing today.</p>
             <Link to="/chat">
-                <Button variant="primary" size="lg" glow className="px-12">Start Free</Button>
+                <button className="btn-modern-glow px-12">Start Free</button>
             </Link>
         </div>
       </section>
