@@ -215,7 +215,7 @@ const handleSend = async (forcedInput?: string) => {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-                {['Show me UP Startup schemes', 'Business plan for a cafe', 'Loan for textile machinery', 'Market trends in AI'].map((hint) => (
+                {['Show me Startup Schemes', 'Business Plan for a Cafe', 'Loan for Textile Machinery', 'Market Trends in AI'].map((hint) => (
                   <button 
                     key={hint}
                     onClick={() => handleSend(hint)}
@@ -262,7 +262,7 @@ const handleSend = async (forcedInput?: string) => {
 
                 <div className="flex items-center gap-2">
                     {isLoading ? (
-                        /* Stop Generation Button (Gemini Style) */
+                        /* Stop Generation Button */
                         <button 
                             onClick={handleStop}
                             className="p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10"
