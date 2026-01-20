@@ -24,13 +24,13 @@ export interface ChatResponse {
 
 export const chatService = {
     // Agent Chat - The primary endpoint for MAYA Multi-Agent system
-    chatAgent: async (message: string, session_id?: string): Promise<ChatResponse> => {
+    chatAgent: async (message: string, session_id?: string, signal?: AbortSignal): Promise<ChatResponse> => {
         try {
             // Humne Backend mein User Profile default rakha hai, par aap yahan se bhej bhi sakte hain
             const response = await api.post<ChatResponse>('/api/chat/agent', { 
                 message, 
                 session_id 
-            });
+            },{ signal });
             return response.data;
         } catch (error) {
             console.error("Error in MAYA Agent chat:", error);

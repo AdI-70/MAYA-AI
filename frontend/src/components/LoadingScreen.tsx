@@ -92,7 +92,7 @@ export function LoadingScreen({ onLoadingComplete }: { onLoadingComplete: () => 
     // Complete loading (after 6s)
     const completeTimer = setTimeout(() => {
       onLoadingComplete();
-    }, 6000);
+    }, 10);
 
     return () => {
       clearInterval(fillInterval);

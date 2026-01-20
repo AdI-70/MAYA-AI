@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, Menu, ChevronDown, PlusCircle } from 'lucide-react';
-import { Message, Scheme } from '../types';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Sparkles, Menu, ChevronDown, PlusCircle, Square } from 'lucide-react';
+import { Message } from '../types';
 import { Message as MessageComponent } from '../components/Message';
 import { Sidebar } from '../components/Sidebar';
 import { chatService } from '../services/api';
@@ -16,6 +16,8 @@ export function ChatInterface() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<{ id: string; title: string }[]>([]);
   
+  // Ref for AbortController to stop generation
+  const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // --- 1. Session Management ---
@@ -67,12 +69,13 @@ export function ChatInterface() {
   };
 
   const handleNewChat = () => {
+    handleStop(); // Stop any ongoing generation
     setMessages([]);
     setCurrentSessionId(null);
     setInput('');
   };
 
-  // --- 2. Message Handling ---
+  // --- 2. Message & Abort Handling ---
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -81,44 +84,63 @@ export function ChatInterface() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+    }
+  };
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
+const handleSend = async (forcedInput?: string) => {
+  const textToSend = forcedInput || input;
+  if (!textToSend.trim() || isLoading) return;
+
+  // 1. Naya AbortController banayein aur use ref mein save karein
+  const controller = new AbortController();
+  abortControllerRef.current = controller;
+
+  const userMsg: Message = {
+    id: Date.now().toString(),
+    role: 'user',
+    content: textToSend,
+    timestamp: new Date(),
+    type: 'text'
+  };
+
+  setMessages(prev => [...prev, userMsg]);
+  setInput('');
+  setIsLoading(true);
+
+  try {
+    // 2. CRITICAL CHANGE: Signal ko chatAgent mein teesre parameter ke taur par bhejein
+    const data = await chatService.chatAgent(
+      textToSend, 
+      currentSessionId || undefined, 
+      controller.signal // <--- Ye signal background request ko cancel karega
+    );
+    
+    const aiMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: data.response,
       timestamp: new Date(),
-      type: 'text'
+      type: data.schemes && data.schemes.length > 0 ? 'scheme-list' : 'text',
+      schemes: data.schemes || [],
+      agent: data.agent
     };
 
-    setMessages(prev => [...prev, userMsg]);
-    const currentInput = input;
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      // Direct call to our LangGraph Agent API
-      const data = await chatService.chatAgent(currentInput, currentSessionId || undefined);
-      
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date(),
-        // Backend se aayi schemes agar hain toh type 'scheme-list' hoga
-        type: data.schemes && data.schemes.length > 0 ? 'scheme-list' : 'text',
-        schemes: data.schemes || [],
-        agent: data.agent // Kaunsa agent bol raha hai (Router/Scheme/Finance)
-      };
-
-      setMessages(prev => [...prev, aiMsg]);
-      
-      if (data.session_id && data.session_id !== currentSessionId) {
-        setCurrentSessionId(data.session_id);
-        loadSessions(); 
-      }
-    } catch (error) {
+    setMessages(prev => [...prev, aiMsg]);
+    
+    if (data.session_id && data.session_id !== currentSessionId) {
+      setCurrentSessionId(data.session_id);
+      loadSessions(); 
+    }
+  } catch (error: any) {
+    // 3. Check karein ki kya error request cancel hone ki wajah se aaya hai
+    if (error.name === 'AbortError' || error.name === 'CanceledError') {
+      console.log("🛑 MAYA: Generation stopped by user");
+      // Kuch nahi karenge, message list mein AI response add nahi hoga
+    } else {
       console.error("Agent Error:", error);
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
@@ -127,10 +149,12 @@ export function ChatInterface() {
         timestamp: new Date(),
         type: 'text'
       }]);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } finally {
+    setIsLoading(false);
+    abortControllerRef.current = null;
+  }
+};
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -160,9 +184,10 @@ export function ChatInterface() {
                 <Menu size={20} />
               </button>
             )}
-            <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/5 transition-all">
+            <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-white/5 transition-all cursor-pointer group">
               <span className="text-sm font-bold tracking-tight text-white/90">MAYA 1.0</span>
               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <ChevronDown size={14} className="text-text-secondary group-hover:text-white transition-colors" />
             </div>
           </div>
           
@@ -179,24 +204,24 @@ export function ChatInterface() {
               <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
           ) : messages.length === 0 ? (
-            /* Welcome State */
+            /* Welcome State - Merged Theme */
             <div className="flex flex-col items-center justify-center h-full px-4 text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20 animate-in zoom-in duration-500">
                 <Sparkles size={32} className="text-primary" />
               </div>
-              <h1 className="text-3xl font-bold text-white mb-3">Welcome to MAYA</h1>
-              <p className="text-text-secondary max-w-md mb-8">
-                Your autonomous business agent for schemes, market trends, and scaling in India.
+              <h1 className="text-3xl font-bold text-white mb-3 animate-in fade-in slide-in-from-bottom-3 duration-700">How can I help you grow?</h1>
+              <p className="text-text-secondary max-w-md mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                Ask about market trends, schemes, or business ideas in India.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                 {['Show me UP Startup schemes', 'Business plan for a cafe', 'Loan for textile machinery', 'Market trends in AI'].map((hint) => (
                   <button 
                     key={hint}
-                    onClick={() => { setInput(hint); }}
-                    className="p-4 bg-white/5 border border-white/10 rounded-xl text-left text-sm hover:border-primary/50 transition-all hover:bg-white/10"
+                    onClick={() => handleSend(hint)}
+                    className="p-4 bg-white/5 border border-white/10 rounded-xl text-left text-sm hover:border-primary/50 transition-all hover:bg-white/10 group"
                   >
-                    {hint}
+                    <span className="text-text-secondary group-hover:text-white transition-colors">{hint}</span>
                   </button>
                 ))}
               </div>
@@ -208,38 +233,58 @@ export function ChatInterface() {
                 <MessageComponent key={msg.id} message={msg} />
               ))}
               {isLoading && <ThinkingWithText />}
-              <div ref={messagesEndRef} className="h-32" />
+              <div ref={messagesEndRef} className="h-40" />
             </div>
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent pt-10 pb-6 px-4">
-          <div className="max-w-[800px] mx-auto">
-            <div className="relative flex flex-col bg-[#111] rounded-2xl border border-white/10 shadow-2xl focus-within:border-primary/50 transition-all">
+        {/* Floating Input Area - Merged Theme */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/90 to-transparent pt-20 pb-6 px-4 z-10">
+          <div className="max-w-[800px] mx-auto relative group">
+            {/* Ambient Glow */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-md transition duration-500" />
+            
+            <div className="relative flex flex-col bg-[#0f0f0f] rounded-2xl border border-white/10 shadow-2xl focus-within:border-primary/40 transition-all overflow-hidden">
               <textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask MAYA about business, schemes, or growth..."
-                className="w-full bg-transparent border-none outline-none text-white placeholder-text-secondary/40 px-5 py-4 resize-none max-h-[200px] min-h-[60px] text-[15px]"
+                placeholder="Message MAYA..."
+                className="w-full bg-transparent border-none outline-none text-white placeholder-text-secondary/40 px-5 py-4 resize-none max-h-[200px] min-h-[60px] text-[15px] custom-scrollbar"
                 rows={1}
               />
               <div className="flex justify-between items-center px-3 pb-3">
-                <button onClick={handleNewChat} className="p-2 text-text-secondary hover:text-white transition-colors">
-                  <PlusCircle size={20} />
-                </button>
-                <button 
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className="px-4 py-2 rounded-xl bg-primary text-black font-bold hover:scale-105 transition-all disabled:opacity-30 disabled:grayscale"
-                >
-                  <Send size={18} />
-                </button>
+                <div className="flex gap-1">
+                    <button onClick={handleNewChat} className="p-2 text-text-secondary hover:text-white transition-colors" title="New Chat">
+                    <PlusCircle size={20} />
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {isLoading ? (
+                        /* Stop Generation Button (Gemini Style) */
+                        <button 
+                            onClick={handleStop}
+                            className="p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all flex items-center gap-2 border border-white/10"
+                        >
+                            <Square size={14} fill="white" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Stop</span>
+                        </button>
+                    ) : (
+                        /* Send Button */
+                        <button 
+                            onClick={() => handleSend()}
+                            disabled={!input.trim()}
+                            className="p-2.5 rounded-xl bg-primary text-black font-bold hover:scale-105 transition-all disabled:opacity-20 disabled:grayscale disabled:scale-100"
+                        >
+                            <Send size={18} />
+                        </button>
+                    )}
+                </div>
               </div>
             </div>
-            <p className="text-center text-[10px] text-white/20 mt-3 uppercase tracking-widest">
-              Autonomous Intelligence Layer v1.0
+            <p className="text-center text-[10px] text-white/20 mt-3 uppercase tracking-widest pointer-events-none">
+              MAYA can make mistakes. Verify important info.
             </p>
           </div>
         </div>
