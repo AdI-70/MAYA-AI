@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Send, Sparkles, Menu, ChevronDown, PanelLeftOpen } from 'lucide-react';
 import { Message } from '../types';
 import { Message as MessageComponent } from '../components/Message';

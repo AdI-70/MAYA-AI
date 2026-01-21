@@ -1,6 +1,5 @@
-import React from 'react';
+
 import { ExternalLink, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
-import { clsx } from 'clsx';
 import { Button } from './Button';
 
 export interface Scheme {
